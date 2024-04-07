@@ -5,6 +5,7 @@ import { Grid } from '@mui/material';
 import ChatList from '../specific/ChatList';
 import { sampleChats } from '../../constants/sampleData';
 import { useParams } from 'react-router-dom';
+import Profile from '../specific/Profile';
 
 /* AppLayout is not a typical component. It's a higher-order component (HOC). */
 /* A higher-order component (HOC) is a function that takes a component and returns a new component with enhanced functionality.  */
@@ -66,7 +67,7 @@ const AppLayout = () => (WrappedComponent) => {
               bgcolor: 'rgba(0,0,0,0.85)',
             }}
           >
-            third
+            <Profile />
           </Grid>
         </Grid>
       </>
