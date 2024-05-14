@@ -1,4 +1,13 @@
 import {
+  Close as CloseIcon,
+  Dashboard as DashboardIcon,
+  ExitToApp as ExitToAppIcon,
+  Groups as GroupsIcon,
+  ManageAccounts as ManageAccountsIcon,
+  Menu as MenuIcon,
+  Message as MessageIcon,
+} from '@mui/icons-material';
+import {
   Box,
   Drawer,
   Grid,
@@ -7,19 +16,9 @@ import {
   Typography,
   styled,
 } from '@mui/material';
-import React from 'react';
+import React, { useState } from 'react';
+import { Link as LinkComponent, Navigate, useLocation } from 'react-router-dom';
 import { grayColor, matBlack } from '../../constants/color';
-import {
-  Close as CloseIcon,
-  Groups as GroupsIcon,
-  ManageAccounts as ManageAccountsIcon,
-  Menu as MenuIcon,
-  Message as MessageIcon,
-  Dashboard as DashboardIcon,
-  ExitToApp as ExitToAppIcon,
-} from '@mui/icons-material';
-import { useState } from 'react';
-import { useLocation, Link as LinkComponent } from 'react-router-dom';
 
 const Link = styled(LinkComponent)`
   text-decoration: none;
@@ -39,17 +38,17 @@ const adminTabs = [
   },
   {
     name: 'Users',
-    path: '/admin/users-management',
+    path: '/admin/users',
     icon: <ManageAccountsIcon />,
   },
   {
     name: 'Chats',
-    path: '/admin/chats-management',
+    path: '/admin/chats',
     icon: <GroupsIcon />,
   },
   {
     name: 'Messages',
-    path: '/admin/messages-management',
+    path: '/admin/messages',
     icon: <MessageIcon />,
   },
 ];
@@ -97,6 +96,8 @@ const Sidebar = ({ w }) => {
   );
 };
 
+const isAdmin = true;
+
 const AdminLayout = ({ children }) => {
   const [isMobile, setIsMobile] = useState(false);
   const handleMobile = () => {
@@ -105,6 +106,9 @@ const AdminLayout = ({ children }) => {
   const handleClose = () => {
     setIsMobile(false);
   };
+
+  if(!isAdmin) return <Navigate to="/admin" />
+
   return (
     <Grid container minHeight={'100vh'}>
       <Box
