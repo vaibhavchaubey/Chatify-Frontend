@@ -1,8 +1,11 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import ProtectRoute from './components/auth/ProtectRoute';
 import { LayoutLoader } from './components/layout/Loaders';
-
+import axios from 'axios';
+import { server } from './constants/config';
+import { useDispatch, useSelector } from 'react-redux';
+import { userNotExists } from './redux/reducers/authSlice';
 
 /* lazy is a function provided by React that allows you to dynamically import a component using 
 import() and lazily load it. Lazily loading components means that they are only loaded when they 
@@ -18,12 +21,24 @@ const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'));
 const Dashborad = lazy(() => import('./pages/admin/Dashborad'));
 const UserManagement = lazy(() => import('./pages/admin/UserManagement'));
 const ChatManagement = lazy(() => import('./pages/admin/ChatManagement'));
-const MessagesManagement = lazy(() => import('./pages/admin/MessageManagement'));
-
-let user = true;
+const MessagesManagement = lazy(() =>
+  import('./pages/admin/MessageManagement')
+);
 
 const App = () => {
-  return (
+  const { user, loader } = useSelector((state) => state.auth);
+
+  const dispatch = useDispatch();
+  useEffect(() => {
+    axios
+      .get(`${server}/user/me`)
+      .then((res) => console.log(res))
+      .catch((err) => dispatch(userNotExists()));
+  }, [dispatch]);
+
+  return loader ? (
+    <LayoutLoader />
+  ) : (
     <BrowserRouter>
       <Suspense fallback={<LayoutLoader />}>
         <Routes>
@@ -45,7 +60,10 @@ const App = () => {
           <Route path="/admin/dashboard" element={<Dashborad />}></Route>
           <Route path="/admin/users" element={<UserManagement />}></Route>
           <Route path="/admin/chats" element={<ChatManagement />}></Route>
-          <Route path="/admin/messages" element={<MessagesManagement />}></Route>
+          <Route
+            path="/admin/messages"
+            element={<MessagesManagement />}
+          ></Route>
 
           <Route path="*" element={<NotFound />} />
         </Routes>
