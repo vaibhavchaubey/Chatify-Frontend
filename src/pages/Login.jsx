@@ -79,7 +79,10 @@ const Login = () => {
     };
 
     try {
+      console.log('12');
+
       const { data } = await axios.post(`${server}/user/new`, formData, config);
+      console.log('terst');
 
       dispatch(userExists(data.user));
       toast.success(data.message);
