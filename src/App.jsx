@@ -1,11 +1,11 @@
-import React, { Suspense, lazy, useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import axios from 'axios';
+import { Suspense, lazy, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import ProtectRoute from './components/auth/ProtectRoute';
 import { LayoutLoader } from './components/layout/Loaders';
-import axios from 'axios';
 import { server } from './constants/config';
-import { useDispatch, useSelector } from 'react-redux';
-import { userNotExists } from './redux/reducers/authSlice';
+import { userExists, userNotExists } from './redux/reducers/authSlice';
 
 /* lazy is a function provided by React that allows you to dynamically import a component using 
 import() and lazily load it. Lazily loading components means that they are only loaded when they 
@@ -31,9 +31,9 @@ const App = () => {
   const dispatch = useDispatch();
   useEffect(() => {
     axios
-      .get(`${server}/user/me`)
-      .then((res) => console.log(res))
-      .catch((err) => dispatch(userNotExists()));
+      .get(`${server}/user/me`, { withCredentials: true })
+      .then(({ data }) => dispatch(userExists(data.user)))
+      .catch(() => dispatch(userNotExists()));
   }, [dispatch]);
 
   return loader ? (
