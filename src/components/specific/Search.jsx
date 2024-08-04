@@ -1,31 +1,39 @@
+import { useInputValidation } from '6pp';
+import { Search as SearchIcon } from '@mui/icons-material';
 import {
   Dialog,
-  Stack,
   DialogTitle,
-  TextField,
   InputAdornment,
   List,
+  Stack,
+  TextField,
 } from '@mui/material';
-import { Search as SearchIcon } from '@mui/icons-material';
-import { useInputValidation } from '6pp';
-import UserItem from '../shared/UserItem';
 import { useEffect, useState } from 'react';
-import { sampleUsers } from '../../constants/sampleData';
 import { useDispatch, useSelector } from 'react-redux';
+import { useAsyncMutation } from '../../hooks/hook';
+import {
+  useLazySearchUserQuery,
+  useSendFriendRequestMutation,
+} from '../../redux/api/api';
 import { setIsSearch } from '../../redux/reducers/miscSlice';
-import { useLazySearchUserQuery } from '../../redux/api/api';
+import UserItem from '../shared/UserItem';
 
 const Search = () => {
   const dispatch = useDispatch();
   const { isSearch } = useSelector((state) => state.misc);
 
-  const [searchUser, { data, error, isLoading }] = useLazySearchUserQuery();
+  const [searchUser] = useLazySearchUserQuery();
+
+  // custom hook
+  const [sendFriendRequest, isLoadingSendFriendRequest] = useAsyncMutation(
+    useSendFriendRequestMutation
+  );
 
   const search = useInputValidation('');
-  const [users, setUsers] = useState(sampleUsers);
-  let isLoadingSendFriendRequest = false;
-  const addFriendHandler = (id) => {
-    console.log(id);
+  const [users, setUsers] = useState([]);
+
+  const addFriendHandler = async (id) => {
+    await sendFriendRequest('Sending friend request...', { userId: id });
   };
 
   const searchCloseHandler = () => {
@@ -34,8 +42,9 @@ const Search = () => {
 
   useEffect(() => {
     const timeOutId = setTimeout(() => {
-      console.log(search.value);
-      // searchUser(search.value);
+      searchUser(search.value)
+        .then(({ data }) => setUsers(data?.users))
+        .catch((e) => console.log(e));
     }, 1000);
 
     return () => clearTimeout(timeOutId);
