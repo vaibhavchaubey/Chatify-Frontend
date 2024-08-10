@@ -4,7 +4,7 @@ import { server } from '../../constants/config';
 const api = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({
-    baseUrl: `${server}`,
+    baseUrl: `${server}/api/v1`,
   }),
   tagTypes: ['Chat', 'User'],
 
@@ -35,6 +35,41 @@ const api = createApi({
       }),
       invalidatesTags: ['User'],
     }),
+
+    getNotifications: builder.query({
+      query: () => ({
+        url: 'user/notifications',
+        method: 'GET',
+        credentials: 'include',
+      }),
+      /* This setting determines how long (in seconds) the cached data should be kept in the store after the last component using it is unmounted. A value of 0 means the data will be removed from the cache immediately once it is no longer used. */
+      keepUnusedDataFor: 0,
+    }),
+
+    acceptFriendRequest: builder.mutation({
+      query: (data) => ({
+        url: `/user/acceptrequest`,
+        method: 'PUT',
+        credentials: 'include',
+        body: data,
+      }),
+      invalidatesTags: ['Chat'],
+    }),
+
+    chatDetails: builder.query({
+      query: ({ chatId, populate = false }) => {
+        let url = `/chat/${chatId}`;
+        if (populate) {
+          url += '?populate=true';
+        }
+        return {
+          url,
+          method: 'GET',
+          credentials: 'include',
+        };
+      },
+      providesTags: ['Chat'],
+    }),
   }),
 });
 
@@ -42,6 +77,9 @@ export const {
   useMyChatsQuery,
   useLazySearchUserQuery,
   useSendFriendRequestMutation,
+  useGetNotificationsQuery,
+  useAcceptFriendRequestMutation,
+  useChatDetailsQuery,
 } = api;
 
 export default api;

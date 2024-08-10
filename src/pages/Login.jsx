@@ -45,7 +45,7 @@ const Login = () => {
     };
     try {
       const { data } = await axios.post(
-        `${server}/user/login`,
+        `${server}/api/v1/user/login`,
         {
           username: username.value,
           password: password.value,
@@ -81,7 +81,11 @@ const Login = () => {
     try {
       console.log('12');
 
-      const { data } = await axios.post(`${server}/user/new`, formData, config);
+      const { data } = await axios.post(
+        `${server}/api/v1/user/new`,
+        formData,
+        config
+      );
       console.log('terst');
 
       dispatch(userExists(data.user));

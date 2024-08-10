@@ -6,6 +6,7 @@ import ProtectRoute from './components/auth/ProtectRoute';
 import { LayoutLoader } from './components/layout/Loaders';
 import { server } from './constants/config';
 import { userExists, userNotExists } from './redux/reducers/authSlice';
+import { SocketProvider } from './socket';
 
 /* lazy is a function provided by React that allows you to dynamically import a component using 
 import() and lazily load it. Lazily loading components means that they are only loaded when they 
@@ -31,7 +32,7 @@ const App = () => {
   const dispatch = useDispatch();
   useEffect(() => {
     axios
-      .get(`${server}/user/me`, { withCredentials: true })
+      .get(`${server}/api/v1/user/me`, { withCredentials: true })
       .then(({ data }) => dispatch(userExists(data.user)))
       .catch(() => dispatch(userNotExists()));
   }, [dispatch]);
@@ -42,7 +43,13 @@ const App = () => {
     <BrowserRouter>
       <Suspense fallback={<LayoutLoader />}>
         <Routes>
-          <Route element={<ProtectRoute user={user} />}>
+          <Route
+            element={
+              <SocketProvider>
+                <ProtectRoute user={user} />
+              </SocketProvider>
+            }
+          >
             <Route path="/" element={<Home />} />
             <Route path="/chat/:chatId" element={<Chat />} />
             <Route path="/groups" element={<Groups />} />

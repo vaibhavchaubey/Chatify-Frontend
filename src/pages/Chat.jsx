@@ -16,15 +16,54 @@ import { InputBox } from '../components/styles/StyledComponents';
 import FileMenu from '../components/dialogs/FileMenu';
 import { sampleMessage } from '../constants/sampleData';
 import MessageComponent from '../components/shared/MessageComponent';
+import { getSocket } from '../socket';
+import { NEW_MESSAGE } from '../constants/event';
+import { useChatDetailsQuery } from '../redux/api/api';
 
 const user = {
   _id: 'sdfsdfsdf',
   name: 'Abhishek Nahar Singh',
 };
 
-function Chat() {
+const Chat = ({ chatId }) => {
   const containerRef = useRef(null);
-  return (
+  const socket = getSocket();
+
+  const chatDetails = useChatDetailsQuery({ chatId, skip: !chatId });
+
+  const [message, setMessage] = useState('');
+  const members = chatDetails?.data?.chat?.members;
+
+  const submitHandler = (e) => {
+    e.preventDefault();
+
+    if (!message.trim()) {
+      return;
+    }
+
+    // Emitting the message to the server
+    socket.emit(NEW_MESSAGE, { chatId, members, message });
+    setMessage('');
+  };
+
+  // useEffect(() => {
+  //   socket.on('connect', () => {
+  //     console.log('Connected to server with ID:', socket.id);
+  //   });
+
+  //   socket.on('connect_error', (error) => {
+  //     console.error('Connection error:', error);
+  //   });
+
+  //   return () => {
+  //     socket.off('connect');
+  //     socket.off('connect_error');
+  //   };
+  // }, [socket]);
+
+  return chatDetails.isLoading ? (
+    <Skeleton />
+  ) : (
     <Fragment>
       <Stack
         ref={containerRef}
@@ -47,6 +86,7 @@ function Chat() {
         style={{
           height: '10%',
         }}
+        onSubmit={submitHandler}
       >
         <Stack
           direction={'row'}
@@ -65,7 +105,11 @@ function Chat() {
             <AttachFileIcon />
           </IconButton>
 
-          <InputBox placeholder="Type Message Here..." />
+          <InputBox
+            placeholder="Type Message Here..."
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+          />
 
           <IconButton
             type="submit"
@@ -88,6 +132,6 @@ function Chat() {
       <FileMenu />
     </Fragment>
   );
-}
+};
 
 export default AppLayout()(Chat);

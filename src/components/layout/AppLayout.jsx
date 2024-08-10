@@ -10,6 +10,7 @@ import { useMyChatsQuery } from '../../redux/api/api';
 import { useDispatch, useSelector } from 'react-redux';
 import { setIsMobile } from '../../redux/reducers/miscSlice';
 import { useErrors } from '../../hooks/hook';
+import { getSocket } from '../../socket';
 
 /* AppLayout is not a typical component. It's a higher-order component (HOC). */
 /* A higher-order component (HOC) is a function that takes a component and returns a new component with enhanced functionality.  */
@@ -28,9 +29,14 @@ const AppLayout = () => (WrappedComponent) => {
     const chatId = params.chatId;
     const dispatch = useDispatch();
 
+    const socket = getSocket();
+
     const { isMobile } = useSelector((state) => state.misc);
+    const { user } = useSelector((state) => state.auth);
 
     const { isLoading, data, isError, error, refetch } = useMyChatsQuery('');
+
+    console.log({ data });
 
     useErrors([{ isError, error }]);
 
@@ -83,7 +89,7 @@ const AppLayout = () => (WrappedComponent) => {
             )}
           </Grid>
           <Grid item xs={12} sm={8} md={5} lg={6} height={'100%'}>
-            <WrappedComponent {...props} />
+            <WrappedComponent {...props} chatId={chatId} />
           </Grid>
           <Grid
             item
@@ -99,7 +105,7 @@ const AppLayout = () => (WrappedComponent) => {
               bgcolor: 'rgba(0,0,0,0.85)',
             }}
           >
-            <Profile />
+            <Profile user={user} />
           </Grid>
         </Grid>
       </>
