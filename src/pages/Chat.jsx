@@ -1,37 +1,58 @@
-import React, {
-  Fragment,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
-import AppLayout from '../components/layout/AppLayout';
-import { IconButton, Skeleton, Stack } from '@mui/material';
-import { grayColor, orange } from '../constants/color';
 import {
   AttachFile as AttachFileIcon,
   Send as SendIcon,
 } from '@mui/icons-material';
-import { InputBox } from '../components/styles/StyledComponents';
+import { IconButton, Skeleton, Stack } from '@mui/material';
+import React, { Fragment, useCallback, useRef, useState } from 'react';
 import FileMenu from '../components/dialogs/FileMenu';
-import { sampleMessage } from '../constants/sampleData';
+import AppLayout from '../components/layout/AppLayout';
 import MessageComponent from '../components/shared/MessageComponent';
-import { getSocket } from '../socket';
+import { InputBox } from '../components/styles/StyledComponents';
+import { grayColor, orange } from '../constants/color';
 import { NEW_MESSAGE } from '../constants/event';
-import { useChatDetailsQuery } from '../redux/api/api';
+import { useErrors, useSocketsEvents } from '../hooks/hook';
+import { useChatDetailsQuery, useGetMessagesQuery } from '../redux/api/api';
+import { getSocket } from '../socket';
+import { useInfiniteScrollTop } from '6pp';
 
-const user = {
-  _id: 'sdfsdfsdf',
-  name: 'Abhishek Nahar Singh',
-};
-
-const Chat = ({ chatId }) => {
+const Chat = ({ chatId, user }) => {
   const containerRef = useRef(null);
   const socket = getSocket();
 
+  const [message, setMessage] = useState('');
+  const [messages, setMessages] = useState([]);
+  const [page, setPage] = useState(1);
+
   const chatDetails = useChatDetailsQuery({ chatId, skip: !chatId });
 
-  const [message, setMessage] = useState('');
+  const oldMessagesChunk = useGetMessagesQuery({ chatId, page });
+
+  // When the user scrolls to the top, the page number is incremented by calling the setPage function.
+  // This causes the component to re-render, triggering a new fetch for oldMessagesChunk.
+  // The newly fetched messages from oldMessagesChunk.data?.messages are then passed to the useInfiniteScrollTop hook.
+  // These new messages are appended to the existing ones, providing an updated list of messages in the output.
+
+  const { data: oldMessages, setData: setOldMessages } = useInfiniteScrollTop(
+    containerRef,
+    oldMessagesChunk.data?.totalPages,
+    page,
+    setPage,
+    oldMessagesChunk.data?.messages
+  );
+
+  const errors = [
+    {
+      isError: chatDetails.isError,
+      error: chatDetails.error,
+    },
+    {
+      isError: oldMessagesChunk.isError,
+      error: oldMessagesChunk.error,
+    },
+  ];
+
+  console.log('oldMessages', oldMessages);
+
   const members = chatDetails?.data?.chat?.members;
 
   const submitHandler = (e) => {
@@ -46,20 +67,19 @@ const Chat = ({ chatId }) => {
     setMessage('');
   };
 
-  // useEffect(() => {
-  //   socket.on('connect', () => {
-  //     console.log('Connected to server with ID:', socket.id);
-  //   });
+  const newMessagesHandler = useCallback((data) => {
+    setMessages((prev) => [...prev, data.message]);
+  }, []);
 
-  //   socket.on('connect_error', (error) => {
-  //     console.error('Connection error:', error);
-  //   });
+  const eventHandler = {
+    [NEW_MESSAGE]: newMessagesHandler,
+  };
 
-  //   return () => {
-  //     socket.off('connect');
-  //     socket.off('connect_error');
-  //   };
-  // }, [socket]);
+  useSocketsEvents(socket, eventHandler);
+
+  useErrors(errors);
+
+  const allMessages = [...oldMessages, ...messages];
 
   return chatDetails.isLoading ? (
     <Skeleton />
@@ -77,7 +97,7 @@ const Chat = ({ chatId }) => {
           overflowY: 'auto',
         }}
       >
-        {sampleMessage.map((i) => (
+        {allMessages.map((i) => (
           <MessageComponent key={i._id} message={i} user={user} />
         ))}
       </Stack>
