@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import Header from './Header';
 import Title from '../shared/Title';
 import { Drawer, Grid, Skeleton } from '@mui/material';
@@ -9,8 +9,10 @@ import Profile from '../specific/Profile';
 import { useMyChatsQuery } from '../../redux/api/api';
 import { useDispatch, useSelector } from 'react-redux';
 import { setIsMobile } from '../../redux/reducers/miscSlice';
-import { useErrors } from '../../hooks/hook';
+import { useErrors, useSocketsEvents } from '../../hooks/hook';
 import { getSocket } from '../../socket';
+import { NEW_MESSAGE_ALERT, NEW_REQUEST } from '../../constants/event';
+import { incrementNotification } from '../../redux/reducers/chatSlice';
 
 /* AppLayout is not a typical component. It's a higher-order component (HOC). */
 /* A higher-order component (HOC) is a function that takes a component and returns a new component with enhanced functionality.  */
@@ -48,6 +50,20 @@ const AppLayout = () => (WrappedComponent) => {
     const handleMobileCLose = () => {
       dispatch(setIsMobile(false));
     };
+
+    const newMessageAlertHandler = useCallback((data) => {}, []);
+
+    const newRequestHandler = useCallback(() => {
+      dispatch(incrementNotification());
+    }, [dispatch]);
+
+    const eventHandlers = {
+      [NEW_MESSAGE_ALERT]: newMessageAlertHandler,
+      [NEW_REQUEST]: newRequestHandler,
+    };
+
+    useSocketsEvents(socket, eventHandlers);
+
     return (
       <>
         <Title />
