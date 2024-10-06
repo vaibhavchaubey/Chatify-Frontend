@@ -9,7 +9,9 @@ import {
   Stack,
   TextField,
   Typography,
+  InputAdornment,
 } from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 import axios from 'axios';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
@@ -22,6 +24,9 @@ import { usernameValidator } from '../utils/validators';
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [showPassword, setShowPassword] = useState(false);
 
   const toggleLogin = () => setIsLogin((prev) => !prev);
 
@@ -34,9 +39,16 @@ const Login = () => {
 
   const dispatch = useDispatch();
 
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
+
+  const handleMouseDownPassword = (event) => {
+    event.preventDefault();
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
-
+    const toastId = toast.loading('Logging In...');
+    setIsLoading(true);
     const config = {
       withCredentials: true,
       headers: {
@@ -54,15 +66,22 @@ const Login = () => {
       );
 
       dispatch(userExists(data.user));
-      toast.success(data.message);
+      toast.success(data.message, {
+        id: toastId,
+      });
     } catch (error) {
       console.log(error);
-      toast.error(error?.response?.data?.message || 'Something Went Wrong');
+      toast.error(error?.response?.data?.message || 'Something Went Wrong', {
+        id: toastId,
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
   const handleSignup = async (e) => {
     e.preventDefault();
-
+    const toastId = toast.loading('Signing Up...');
+    setIsLoading(true);
     const formData = new FormData();
 
     formData.append('avatar', avatar.file);
@@ -89,10 +108,16 @@ const Login = () => {
       console.log('terst');
 
       dispatch(userExists(data.user));
-      toast.success(data.message);
+      toast.success(data.message, {
+        id: toastId,
+      });
     } catch (error) {
       console.log(error);
-      toast.error(error?.response?.data?.message || 'Something Went Wrong');
+      toast.error(error?.response?.data?.message || 'Something Went Wrong', {
+        id: toastId,
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
   return (
@@ -146,11 +171,25 @@ const Login = () => {
                   required
                   fullWidth
                   label="Password"
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   margin="normal"
                   variant="outlined"
                   value={password.value}
                   onChange={password.changeHandler}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="toggle password visibility"
+                          onClick={handleClickShowPassword}
+                          onMouseDown={handleMouseDownPassword}
+                          edge="end"
+                        >
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
                 />
                 <Button
                   sx={{
@@ -160,6 +199,7 @@ const Login = () => {
                   color="primary"
                   type="submit"
                   fullWidth
+                  disabled={isLoading}
                 >
                   Login
                 </Button>
@@ -171,6 +211,7 @@ const Login = () => {
                   variant="text"
                   color="secondary"
                   onClick={toggleLogin}
+                  disabled={isLoading}
                 >
                   Sign Up Instead
                 </Button>
@@ -266,11 +307,25 @@ const Login = () => {
                   required
                   fullWidth
                   label="Password"
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   margin="normal"
                   variant="outlined"
                   value={password.value}
                   onChange={password.changeHandler}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="toggle password visibility"
+                          onClick={handleClickShowPassword}
+                          onMouseDown={handleMouseDownPassword}
+                          edge="end"
+                        >
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
                 />
                 {password.error && (
                   <Typography color="error" variant="caption">
@@ -285,6 +340,7 @@ const Login = () => {
                   color="primary"
                   type="submit"
                   fullWidth
+                  disabled={isLoading}
                 >
                   Sign Up
                 </Button>
@@ -296,6 +352,7 @@ const Login = () => {
                   variant="text"
                   color="secondary"
                   onClick={toggleLogin}
+                  disabled={isLoading}
                 >
                   Login Instead
                 </Button>

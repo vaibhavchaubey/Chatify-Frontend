@@ -16,7 +16,26 @@ import {
 import { matBlack } from '../../constants/color';
 import { DoughnutChart, LineChart } from '../../components/specific/Charts';
 
+import { useFetchData } from '6pp';
+import { server } from '../../constants/config';
+import { LayoutLoader } from '../../components/layout/Loaders';
+import { useErrors } from '../../hooks/hook';
+
 const Dashborad = () => {
+  const { loading, data, error } = useFetchData(
+    `${server}/api/v1/admin/stats`,
+    'dashboard-stats'
+  );
+
+  const { stats } = data || {};
+
+  useErrors([
+    {
+      isError: error,
+      error: error,
+    },
+  ]);
+
   const AppBar = (
     <Paper
       elevation={3}
@@ -54,13 +73,23 @@ const Dashborad = () => {
       alignItems={'center'}
       margin={'2rem 0'}
     >
-      <Widget title={'Users'} value={34} Icon={<PersonIcon />} />
-      <Widget title={'Chats'} value={3} Icon={<GroupIcon />} />
-      <Widget title={'Messages'} value={453} Icon={<MessageIcon />} />
+      <Widget title={'Users'} value={stats?.usersCount} Icon={<PersonIcon />} />
+      <Widget
+        title={'Chats'}
+        value={stats?.totalChatsCount}
+        Icon={<GroupIcon />}
+      />
+      <Widget
+        title={'Messages'}
+        value={stats?.messagesCount}
+        Icon={<MessageIcon />}
+      />
     </Stack>
   );
 
-  return (
+  return loading ? (
+    <LayoutLoader />
+  ) : (
     <AdminLayout>
       <Container component={'main'}>
         {AppBar}
@@ -89,7 +118,7 @@ const Dashborad = () => {
             <Typography margin={'2rem 0'} variant="h4">
               Last Messages
             </Typography>
-            <LineChart value={[1, 3, 7, 4, 2, 7, 3, 8, 2]} />
+            <LineChart value={stats?.messagesChat || []} />
           </Paper>
           <Paper
             elevation={3}
@@ -104,7 +133,13 @@ const Dashborad = () => {
               maxWidth: '25rem',
             }}
           >
-            <DoughnutChart labels={['Single Chats', "Group Chats"]} value={[23, 66]} />
+            <DoughnutChart
+              labels={['Single Chats', 'Group Chats']}
+              value={[
+                stats?.totalChatsCount - stats?.groupsCount || 0,
+                stats?.groupsCount || 0,
+              ]}
+            />
             <Stack
               position={'absolute'}
               direction={'row'}
