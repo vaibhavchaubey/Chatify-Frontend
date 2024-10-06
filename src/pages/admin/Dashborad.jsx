@@ -1,6 +1,3 @@
-import React from 'react';
-import AdminLayout from '../../components/layout/AdminLayout';
-import { Box, Container, Paper, Stack, Typography } from '@mui/material';
 import {
   AdminPanelSettings as AdminPanelSettingsIcon,
   Group as GroupIcon,
@@ -8,17 +5,20 @@ import {
   Notifications as NotificationsIcon,
   Person as PersonIcon,
 } from '@mui/icons-material';
+import { Box, Container, Paper, Stack, Typography } from '@mui/material';
 import moment from 'moment';
+import React from 'react';
+import AdminLayout from '../../components/layout/AdminLayout';
+import { DoughnutChart, LineChart } from '../../components/specific/Charts';
 import {
   CurveButton,
   SearchField,
 } from '../../components/styles/StyledComponents';
 import { matBlack } from '../../constants/color';
-import { DoughnutChart, LineChart } from '../../components/specific/Charts';
 
 import { useFetchData } from '6pp';
-import { server } from '../../constants/config';
 import { LayoutLoader } from '../../components/layout/Loaders';
+import { server } from '../../constants/config';
 import { useErrors } from '../../hooks/hook';
 
 const Dashborad = () => {
