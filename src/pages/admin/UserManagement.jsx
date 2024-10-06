@@ -77,7 +77,7 @@ const UserManagement = () => {
   return (
     <AdminLayout>
       {loading ? (
-        <Skeleton />
+        <Skeleton height={'100vh'} />
       ) : (
         <Table heading={'All Users'} columns={columns} rows={rows} />
       )}
