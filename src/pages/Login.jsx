@@ -70,7 +70,6 @@ const Login = () => {
         id: toastId,
       });
     } catch (error) {
-      console.log(error);
       toast.error(error?.response?.data?.message || 'Something Went Wrong', {
         id: toastId,
       });
@@ -98,21 +97,17 @@ const Login = () => {
     };
 
     try {
-      console.log('12');
-
       const { data } = await axios.post(
         `${server}/api/v1/user/new`,
         formData,
         config
       );
-      console.log('terst');
 
       dispatch(userExists(data.user));
       toast.success(data.message, {
         id: toastId,
       });
     } catch (error) {
-      console.log(error);
       toast.error(error?.response?.data?.message || 'Something Went Wrong', {
         id: toastId,
       });

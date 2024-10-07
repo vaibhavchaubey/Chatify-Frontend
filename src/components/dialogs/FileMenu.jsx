@@ -71,8 +71,6 @@ const FileMenu = ({ anchorEl, chatId }) => {
       if (res.data) {
         toast.success(`${key} sent successfully}`, { id: toastId });
       } else {
-        console.log(res);
-
         toast.error(`Failed to send ${key}`, { id: toastId });
       }
     } catch (error) {
